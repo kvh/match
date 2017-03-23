@@ -13,6 +13,7 @@ import sys
 import unittest
 
 from match import match
+from match import datatypes
 
 
 valid_us_phone_numbers = [
@@ -54,12 +55,12 @@ class TestDataTypes(unittest.TestCase):
     def test_000_phone_number_detect(self):
         for s in valid_us_phone_numbers:
             score, dtype = match.detect_type(s)
-            self.assertEqual(dtype, match.types.PHONE_NUMBER)
+            self.assertEqual(dtype, datatypes.PhoneNumberType)
             self.assertTrue(score > .8)
 
     def test_001_phone_number_match(self):
         for s in valid_us_phone_numbers:
             for s2 in valid_us_phone_numbers:
                 score, detected_type = match.score(s, s2)
-                self.assertEqual(detected_type, match.types.PHONE_NUMBER)
+                self.assertEqual(detected_type, datatypes.PhoneNumberType)
                 self.assertTrue(score > .9)
