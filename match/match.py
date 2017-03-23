@@ -14,4 +14,5 @@ def score(s1, s2):
 
 
 def score_for_type(s1, s2, dtype):
-    return 0, dtype
+    score = dtype.score(s1, s2)
+    return score, dtype

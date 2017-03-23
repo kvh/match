@@ -5,8 +5,13 @@ from .utils import memoize
 class DataType(object):
     super_types = []
 
-class StringDataType(object):
-    pass
+    def score(self, s1, s2):
+        return 0
+
+class StringDataType(DataType):
+
+    def score(self, s1, s2):
+        return int(s1 == s2)
 
 class PhoneNumberType(StringDataType):
     super_types = [StringDataType]
@@ -16,6 +21,10 @@ class FullNameType(StringDataType):
 
 
 DATATYPES = {
+    # Generic
+    'string': StringDataType,
+
+    # Personal
     'phone_number': PhoneNumberType,
     'full_name': FullNameType,
 }
