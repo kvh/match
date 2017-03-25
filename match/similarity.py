@@ -6,7 +6,6 @@ def make_ngrams(s, grams=3):
     return [s[i:i + grams] for i in range(len(s) - (grams - 1))]
 
 
-
 class NgramSimilarity(object):
 
     def __init__(self, grams=3):

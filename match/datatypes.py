@@ -5,9 +5,7 @@ from dateutil import parser
 import phonenumbers
 
 from .utils import memoize
-from .similarity import (NgramSimilarity,
-                         DiceCoefficientSimilarity,
-                         ProbabilisticNgramSimilarity)
+from .similarity import DiceCoefficientSimilarity
 
 
 class DataType(object):

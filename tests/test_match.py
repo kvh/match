@@ -49,12 +49,10 @@ similar_strings_dice_3grams = [
 ]
 
 
-def generate_probabilistic_corpus(n, alpha_weights):
-    choices = ' abcdefghijklmnopqrstuvwxyz'
-    weights = []
-    for c in choices:
-        weights.append(alpha_weights.get(c, 0))
-    return ''.join(random.choices(choices, weights=weights, k=n))
+def generate_probabilistic_corpus(alpha_weights, n=1):
+    s = ''.join(k*w for k, w in alpha_weights.items()) * n
+    random.sample(s, k=len(s))
+    return s
 
 
 class TestDataTypes(unittest.TestCase):
@@ -96,14 +94,14 @@ class TestDataTypes(unittest.TestCase):
 
     def test_004_probabilistic_string_similarity_jaccard(self):
         tol = .02
-        corpus = generate_probabilistic_corpus(100000, alpha_weights={'a':10, 'b':5, 'c':1})
+        corpus = generate_probabilistic_corpus(alpha_weights={'a':10, 'b':5, 'c':1}, n=10000)
         similar_strings = [
             ('aa', 'aa', 1),
             ('aab', 'aab', 1),
-            ('aaaa bbbb', 'aaaa', .04),
-            ('aaaa cccc', 'aaaa', .04),
-            ('aaaa cccc', 'bbbb cccc', .28),
-            ('cccc', 'bcccc', .55),
+            ('aaaabbbb', 'aaaa', .09),
+            ('aaaacccc', 'aaaa', .02),
+            ('aaaacccc', 'bbbbcccc', .22),
+            ('cccc', 'bcccc', .5),
         ]
         psim = similarity.ProbabilisticNgramSimilarity(corpus, grams=3)
         for s, s2, exp_sim in similar_strings:
@@ -112,16 +110,16 @@ class TestDataTypes(unittest.TestCase):
 
     def test_005_probabilistic_string_similarity_dice(self):
         tol = .02
-        corpus = generate_probabilistic_corpus(100000, alpha_weights={'a':100, 'b':50, 'c':10, 'd':1})
+        corpus = generate_probabilistic_corpus({'a':100, 'b':50, 'c':10, 'd':1}, n=1000)
         similar_strings = [
             ('aa', 'aa', 1),
             ('aab', 'aab', 1),
-            ('aaaa bbbb', 'aaaa', .16),
-            ('aaaa cccc', 'aaaa', .12),
-            ('aaaa cccc', 'bbbb cccc', .63),
-            ('aaaa', 'baaaa', .77),
-            ('cccc', 'bcccc', .89),
-            ('dddd', 'bdddd', .91),
+            ('aaaabbbb', 'aaaa', .25),
+            ('aaaacccc', 'aaaa', .12),
+            ('aaaacccc', 'bbbbcccc', .43),
+            ('aaaa', 'baaaa', .2),
+            ('cccc', 'bcccc', .77),
+            ('dddd', 'bdddd', .86),
         ]
         psim = similarity.ProbabilisticDiceCoefficient(corpus, grams=2)
         for s, s2, exp_sim in similar_strings:
