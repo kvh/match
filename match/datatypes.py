@@ -5,6 +5,7 @@ from dateutil import parser
 import phonenumbers
 
 from .utils import memoize
+from .similarity import dice_coefficient
 
 
 class DataType(object):
@@ -16,11 +17,22 @@ class DataType(object):
     def score_type_match(self, s):
         return -1
 
+    def parse(self, s, to_object=False):
+        obj = self.parse_to_object(s)
+        if obj is None:
+            return None
+        if to_object:
+            return obj
+        return self.to_string(obj)
+
+    def to_string(self, obj):
+        return str(obj)
+
 
 class StringDataType(DataType):
 
     def score_similarity(self, s1, s2):
-        return int(s1 == s2)
+        return dice_coefficient(s1, s2)
 
     def score_type_match(self, s):
         return 0
@@ -54,7 +66,11 @@ class PhoneNumberType(StringDataType):
     # TODO: locale support
     default_region = "US"
 
-    def normalize(self, number):
+    def to_string(self, obj):
+        return phonenumbers.format_number(obj,
+                                          phonenumbers.PhoneNumberFormat.E164)
+
+    def parse_to_object(self, number):
         """Returns None if not a valid phone number"""
         if not number:
             return None
@@ -64,16 +80,15 @@ class PhoneNumberType(StringDataType):
             parsed_number = phonenumbers.parse(number, self.default_region)
             if not phonenumbers.is_valid_number(parsed_number):
                 return None
-            return phonenumbers.format_number(parsed_number,
-                                              phonenumbers.PhoneNumberFormat.E164)
+            return parsed_number
         except phonenumbers.NumberParseException:
             return None
 
     def score_type_match(self, s):
-        return int(self.normalize(s) is not None)
+        return int(self.parse(s) is not None)
 
     def score_similarity(self, s1, s2):
-        return int(self.normalize(s1) == self.normalize(s2))
+        return int(self.parse(s1) == self.parse(s2))
 
 
 """
@@ -85,7 +100,7 @@ email_regex = re.compile(r'^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$')
 class EmailType(StringDataType):
     super_types = [StringDataType]
 
-    def normalize(self, address):
+    def parse_to_object(self, address):
         """Returns None if not a valid email"""
         if not address:
             return None
@@ -126,11 +141,11 @@ def to_datetime(s):
 class DateTimeType(StringDataType):
     super_types = [StringDataType]
 
-    def normalize(self, s):
-        dt = to_datetime(s)
-        if dt:
-            return dt.isoformat()
-        return None
+    def to_string(self, obj):
+        return obj.isoformat()
+
+    def parse_to_object(self, s):
+        return to_datetime(s)
 
     # def score_type_match(self, s):
         # return int(email_regex.match(s) is not None)
@@ -144,9 +159,16 @@ datatype_lookup = {
     'string': StringDataType,
 
     # Entities
-    'phone_number': PhoneNumberType,
-    'full_name': FullNameType,
+    'phonenumber': PhoneNumberType,
+    'fullname': FullNameType,
     'datetime': DateTimeType,
 }
 ALL_TYPES = list(datatype_lookup.values())
 DEFAULT_DATATYPE = StringDataType
+
+def get_datatype(dtype_ish):
+    if isinstance(dtype_ish, DataType):
+        return dtype_ish
+    if issubclass(dtype_ish, DataType):
+        return dtype_ish()
+    return datatype_lookup[dtype_ish]()
