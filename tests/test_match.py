@@ -43,7 +43,7 @@ similar_strings_dice_3grams = [
     ('a', 'ab', .0),
     ('ac', 'ab', .0),
     ('acd', 'abd', .0),
-    ('acdb', 'abdb', .0)k
+    ('acdb', 'abdb', .0)
 ]
 
 
