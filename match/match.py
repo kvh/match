@@ -1,17 +1,20 @@
 # -*- coding: utf-8 -*-
-from .datatypes import datatype_lookup, closest_common_type, eligible_types
+import logging
+
+from .datatypes import closest_common_type, eligible_types
 
 
 def score_types(s, dtypes):
     scores = []
     for t in dtypes:
-        scores.append((t.score_type(s), t))
+        scores.append((t().score_type_match(s), t))
+    logging.debug(scores)
     return scores
 
 
 def detect_type(s):
     scores = score_types(s, eligible_types(s))
-    best = max(scores, key=lambda x:x[0])
+    best = max(scores, key=lambda x: x[0])
     return best
 
 
@@ -23,5 +26,5 @@ def score(s1, s2):
 
 
 def score_for_type(s1, s2, dtype):
-    score = dtype.score_match(s1, s2)
+    score = dtype().score_similarity(s1, s2)
     return score
