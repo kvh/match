@@ -37,8 +37,8 @@ class StringDataType(DataType):
     def score_type_match(self, s):
         return 0
 
-class FullNameType(StringDataType):
-    super_types = [StringDataType]
+# class FullNameType(StringDataType):
+#     super_types = [StringDataType]
 
 
 @memoize
@@ -160,7 +160,7 @@ datatype_lookup = {
 
     # Entities
     'phonenumber': PhoneNumberType,
-    'fullname': FullNameType,
+    # 'fullname': FullNameType,
     'datetime': DateTimeType,
 }
 ALL_TYPES = list(datatype_lookup.values())

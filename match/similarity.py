@@ -1,18 +1,21 @@
 
 
 def make_ngrams(s, grams=3):
-    return [s[i:i+grams] for i in range(len(s)-(grams-1))]
+    return [s[i:i + grams] for i in range(len(s) - (grams - 1))]
 
 
 def dice_coefficient(a, b, grams=3):
     """
     Dice coefficient for character ngrams.
     """
-    if not len(a) or not len(b): return 0.0
-    """ quick case for true duplicates """
-    if a == b: return 1.0
+    if not len(a) or not len(b):
+        return 0.0
+    # quick case for true duplicates
+    if a == b:
+        return 1.0
     # if a != b, and a or b are smaller than 'grams', then they can't possibly match
-    if len(a) < grams or len(b) < grams: return 0.0
+    if len(a) < grams or len(b) < grams:
+        return 0.0
 
     a_bigram_list = make_ngrams(a, grams)
     b_bigram_list = make_ngrams(b, grams)
