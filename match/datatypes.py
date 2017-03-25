@@ -37,8 +37,13 @@ class StringDataType(DataType):
     def score_type_match(self, s):
         return 0
 
+# https://github.com/carltonnorthern/nickname-and-diminutive-names-lookup
 # class FullNameType(StringDataType):
 #     super_types = [StringDataType]
+
+
+# Address
+# https://github.com/openvenues/libpostal, https://github.com/openvenues/pypostal
 
 
 @memoize
@@ -120,7 +125,7 @@ class EmailType(StringDataType):
         return int(email_regex.match(s) is not None)
 
     def score_similarity(self, s1, s2):
-        return int(self.normalize(s1) == self.normalize(s2))
+        return int(self.parse(s1) == self.parse(s2))
 
 
 """
@@ -151,7 +156,7 @@ class DateTimeType(StringDataType):
         # return int(email_regex.match(s) is not None)
 
     def score_similarity(self, s1, s2):
-        return int(self.normalize(s1) == self.normalize(s2))
+        return int(self.parse(s1) == self.parse(s2))
 
 
 datatype_lookup = {
