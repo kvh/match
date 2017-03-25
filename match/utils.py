@@ -17,6 +17,10 @@ def memoize(f):
     return memodict().__getitem__
 
 
+"""
+Text utils
+"""
+
 def clean_to_alphanum(s):
     if not s:
         return ''
