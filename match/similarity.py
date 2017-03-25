@@ -37,7 +37,7 @@ class NgramSimilarity(object):
         """
         sa = set(a_ngram_list)
         sb = set(b_ngram_list)
-        return len(sa & sb) / len(sa | sb)
+        return len(sa & sb) / float(len(sa | sb))
 
 
 class DiceCoefficientSimilarity(NgramSimilarity):
@@ -84,7 +84,7 @@ class ProbabilisticNgramSimilarity(NgramSimilarity):
         raise NotImplementedError
 
     def get_weight(self, ngram):
-        return math.log(self.num_tokens / (self.token_counts[ngram] + self.smoothing_factor))
+        return math.log(self.num_tokens / float(self.token_counts[ngram] + self.smoothing_factor))
 
     def ngram_similarity(self, a_ngram_list, b_ngram_list):
         """
@@ -94,7 +94,7 @@ class ProbabilisticNgramSimilarity(NgramSimilarity):
         sb = set(b_ngram_list)
         intersection_sum = sum([self.get_weight(t) for t in sa & sb])
         union_sum = sum([self.get_weight(t) for t in sa | sb])
-        return intersection_sum / union_sum
+        return intersection_sum / float(union_sum)
 
 
 class ProbabilisticDiceCoefficient(ProbabilisticNgramSimilarity):
@@ -123,5 +123,5 @@ class ProbabilisticDiceCoefficient(ProbabilisticNgramSimilarity):
             else:
                 j += 1
 
-        score = matches / (sum(weights_a) + sum(weights_b))
+        score = matches / float(sum(weights_a) + sum(weights_b))
         return score
