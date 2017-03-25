@@ -8,12 +8,14 @@ test_match
 Tests for `match` module.
 '''
 
-
+import random
 import sys
 import unittest
 
-from match import match
 from match import datatypes
+from match import match
+from match import similarity
+from match import utils
 
 
 valid_us_phone_numbers = [
@@ -45,6 +47,14 @@ similar_strings_dice_3grams = [
     ('acd', 'abd', .0),
     ('acdb', 'abdb', .0)
 ]
+
+
+def generate_probabilistic_corpus(n, alpha_weights):
+    choices = ' abcdefghijklmnopqrstuvwxyz'
+    weights = []
+    for c in choices:
+        weights.append(alpha_weights.get(c, 0))
+    return ''.join(random.choices(choices, weights=weights, k=n))
 
 
 class TestDataTypes(unittest.TestCase):
@@ -84,4 +94,53 @@ class TestDataTypes(unittest.TestCase):
             sim, dtype = match.score_similarity(s, s2)
             self.assertTrue(exp_sim - tol < sim < exp_sim + tol, '{2}: {0} != {1}'.format(sim, exp_sim, (s, s2)))
 
+    def test_004_probabilistic_string_similarity_jaccard(self):
+        tol = .02
+        corpus = generate_probabilistic_corpus(100000, alpha_weights={'a':10, 'b':5, 'c':1})
+        similar_strings = [
+            ('aa', 'aa', 1),
+            ('aab', 'aab', 1),
+            ('aaaa bbbb', 'aaaa', .04),
+            ('aaaa cccc', 'aaaa', .04),
+            ('aaaa cccc', 'bbbb cccc', .28),
+            ('cccc', 'bcccc', .55),
+        ]
+        psim = similarity.ProbabilisticNgramSimilarity(corpus, grams=3)
+        for s, s2, exp_sim in similar_strings:
+            sim = psim.similarity(s, s2)
+            self.assertTrue(exp_sim - tol < sim < exp_sim + tol, '{2}: {0} != {1}'.format(sim, exp_sim, (s, s2)))
 
+    def test_005_probabilistic_string_similarity_dice(self):
+        tol = .02
+        corpus = generate_probabilistic_corpus(100000, alpha_weights={'a':100, 'b':50, 'c':10, 'd':1})
+        similar_strings = [
+            ('aa', 'aa', 1),
+            ('aab', 'aab', 1),
+            ('aaaa bbbb', 'aaaa', .16),
+            ('aaaa cccc', 'aaaa', .12),
+            ('aaaa cccc', 'bbbb cccc', .63),
+            ('aaaa', 'baaaa', .77),
+            ('cccc', 'bcccc', .89),
+            ('dddd', 'bdddd', .91),
+        ]
+        psim = similarity.ProbabilisticDiceCoefficient(corpus, grams=2)
+        for s, s2, exp_sim in similar_strings:
+            sim = psim.similarity(s, s2)
+            self.assertTrue(exp_sim - tol < sim < exp_sim + tol, '{2}: {0} != {1}'.format(sim, exp_sim, (s, s2)))
+
+    # Waiting on good corpus
+    # def test_006_probabilistic_string_similarity_names(self):
+    #     tol = .02
+    #     corpus = ???
+    #     similar_strings = [
+    #         ('susan johnson', 'susan johnson', 1),
+    #         ('susan johnson', 'susie johnson', .66),
+    #         ('susan johnson', 'bob johnson', .59),
+    #         ('susan wjorcek', 'susan johnson', .32),
+    #         ('susan wjorcek', 'bob wjorcek', .64),
+    #         ('susan wjorcek', 'susie wjorcek', .71),
+    #     ]
+    #     psim = similarity.ProbabilisticDiceCoefficient(corpus, grams=3)
+    #     for s, s2, exp_sim in similar_strings:
+    #         sim = psim.similarity(s, s2)
+    #         self.assertTrue(exp_sim - tol < sim < exp_sim + tol, '{2}: {0} != {1}'.format(sim, exp_sim, (s, s2)))

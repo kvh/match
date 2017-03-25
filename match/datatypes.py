@@ -5,11 +5,16 @@ from dateutil import parser
 import phonenumbers
 
 from .utils import memoize
-from .similarity import dice_coefficient
+from .similarity import (NgramSimilarity,
+                         DiceCoefficientSimilarity,
+                         ProbabilisticNgramSimilarity)
 
 
 class DataType(object):
     super_types = []
+
+    def __init__(self, **kwargs):
+        pass
 
     def score_similarity(self, s1, s2):
         return -1
@@ -31,8 +36,14 @@ class DataType(object):
 
 class StringDataType(DataType):
 
+    default_similarity_measure = DiceCoefficientSimilarity(grams=3)
+
+    def __init__(self, **kwargs):
+        self.similarity_measure = kwargs.get('similarity_measure',
+                                             self.default_similarity_measure)
+
     def score_similarity(self, s1, s2):
-        return dice_coefficient(s1, s2)
+        return self.similarity_measure.similarity(s1, s2)
 
     def score_type_match(self, s):
         return 0
