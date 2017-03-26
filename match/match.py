@@ -32,5 +32,6 @@ def score_similarity_as_type(s1, s2, dtype):
     score = get_datatype(dtype).score_similarity(s1, s2)
     return score
 
+
 def parse_as_type(s, dtype, to_object=False):
     return get_datatype(dtype).parse(s, to_object=to_object)
