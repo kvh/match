@@ -48,12 +48,16 @@ Basic entity detection and matching for built-in types.
     (.95, FullNameType)
     >>> match.detect_type('Hi, how are you?')
     (1, StringType)
+    >>> match.score_types('Score this! @squaredloss')
+    [(0, EmailType), (.05, FullNameType), (0, PhoneNumberType), (1, StringType), (0, DateTimeType), ...
 
     # Score similarities intelligently based on detected type
-    >>> match.score_similarity('Jonathon R. Smith', 'john r smith')
+    >>> match.score_similarity('Jonathan R. Smith', 'john r smith')
     (.92, FullNameType)
     >>> match.score_similarity('123 easy st, NY, NY', '123 Easy Street, New York City')
     (.98, AddressType)
+    >>> match.score_similarity('223 easy st, NY, NY', '123 easy st, NY, NY')
+    (.6, AddressType)
     >>> match.score_similarity('Hi, how are you Joe?', 'hi how are you doing joe?')
     (.81, StringType)
     >>> match.score_similarity_as_type('608-555-5555', '608-555-5554', 'phonenumber')
@@ -61,8 +65,10 @@ Basic entity detection and matching for built-in types.
     >>> match.score_similarity_as_type('608-555-5555', '608-555-5554', 'string')
     .9
 
-    # Parse entity based on detected type
-    >>> match.parse('608-555-5555')
+    # Parse entity (to normalized string or object) based on detected type
+    >>> match.parse('(608) 555-5555')
+    ('+1 608 555 5555', PhoneNumberType)
+    >>> match.parse('6085555555')
     ('+1 608 555 5555', PhoneNumberType)
     >>> match.parse(' march 3rd, 1997', to_object=True)
     (datetime.datetime(1997, 3, 3), DateTimeType)
@@ -80,10 +86,10 @@ Probabilistic matching, based on frequencies in a given corpus.
     # Build similarity model from weighted random corpus of a's, b's, c's, and d's
     >>> corpus = random.sample('a'*10000 + ' '*10000 + 'b'*1000 + 'c'*100 + 'd'*10, k=21110)
     >>> psim = similarities.ProbabilisticNgramSimilarity(corpus, grams=2)
-    >>> psim.similarity('ab ba c', 'ab ba d') # Lower similarity since 'a' is common
-    .6
-    >>> psim.similarity('db bd c', 'db bd a') # Higher similarity since 'd' is rare
-    .8
+    >>> psim.similarity('ab ba c', 'ab ba d')
+    .6  # Lower similarity since 'a' is common
+    >>> psim.similarity('db bd c', 'db bd a')
+    .8  # Higher similarity since 'd' is rare
 
 
 Custom types
