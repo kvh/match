@@ -24,6 +24,12 @@ Probabilistic Entity Matching
 * Free software: MIT license
 * Documentation: https://match.readthedocs.io.
 
+Match brings common-sense entity detection and matching to python. Match is:
+
+* Dead-simple to use
+* Fast
+* Lightweight (no heavy dependencies)
+* Magic!
 
 Installation
 --------
@@ -33,7 +39,7 @@ Installation
 Usage
 --------
 
-Basic entity detection and matching for built-in types.
+Automatic entity detection and matching
 
 .. code:: python
 
