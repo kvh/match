@@ -25,12 +25,18 @@ Probabilistic Entity Matching
 * Documentation: https://match.readthedocs.io.
 
 
+Installation
+--------
+
+* TODO
+
 Usage
 --------
 
 Basic entity detection and matching for built-in types.
 
 ```python
+
 >>> import match
 >>> match.detect_type('608-555-5555')
 (1, PhoneNumberType)
@@ -58,11 +64,13 @@ Basic entity detection and matching for built-in types.
 (datetime.datetime(1997, 3, 3), DateTimeType)
 >>> match.parse_as_type(' march 3rd, 1997', 'email')
 None
+
 ```
 
 Probabilistic matching, based on frequencies in a given corpus.
 
 ```python
+
 >>> from match import similarities
 >>> import random
 >>> corpus = random.sample('a'*10000 + ' '*10000 + 'b'*1000 + 'c'*100 + 'd'*10, k=21110)
@@ -71,17 +79,20 @@ Probabilistic matching, based on frequencies in a given corpus.
 .6
 >>> psim.similarity('db bd c', 'db bd a') # Higher similarity since 'd' is rare
 .8
+
 ```
 
 Custom types
 
 ```python
+
 >>> from match.similarity import ProbabilisticDiceCoefficient
 >>> corpus = ''.join(['cheddar', 'brie', 'guyere', 'mozzarella', 'parmesian', 'jack', 'colby'])
 >>> cheese_sim = ProbabilisticDiceCoefficient(corpus)
 >>> match.add_type('cheese', StringType(similarity_measure=cheese_sim))
 >>> match.detect_type('colby jack')
 (.8, 'cheese')
+
 ```
 
 Credits
