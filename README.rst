@@ -38,6 +38,8 @@ Basic entity detection and matching for built-in types.
 .. code:: python
 
     >>> import match
+
+    # Auto detect entity type
     >>> match.detect_type('608-555-5555')
     (1, PhoneNumberType)
     >>> match.detect_type('joe.van.gogh@example.com')
@@ -47,6 +49,7 @@ Basic entity detection and matching for built-in types.
     >>> match.detect_type('Hi, how are you?')
     (1, StringType)
 
+    # Score similarities intelligently based on detected type
     >>> match.score_similarity('Jonathon R. Smith', 'john r smith')
     (.92, FullNameType)
     >>> match.score_similarity('123 easy st, NY, NY', '123 Easy Street, New York City')
@@ -58,6 +61,7 @@ Basic entity detection and matching for built-in types.
     >>> match.score_similarity_as_type('608-555-5555', '608-555-5554', 'string')
     .9
 
+    # Parse entity based on detected type
     >>> match.parse('608-555-5555')
     ('+1 608 555 5555', PhoneNumberType)
     >>> match.parse(' march 3rd, 1997', to_object=True)
@@ -72,6 +76,8 @@ Probabilistic matching, based on frequencies in a given corpus.
 
     >>> from match import similarities
     >>> import random
+
+    # Build similarity model from weighted random corpus of a's, b's, c's, and d's
     >>> corpus = random.sample('a'*10000 + ' '*10000 + 'b'*1000 + 'c'*100 + 'd'*10, k=21110)
     >>> psim = similarities.ProbabilisticNgramSimilarity(corpus, grams=2)
     >>> psim.similarity('ab ba c', 'ab ba d') # Lower similarity since 'a' is common
@@ -85,6 +91,8 @@ Custom types
 .. code:: python
 
     >>> from match.similarity import ProbabilisticDiceCoefficient
+
+    # Build similarity model from custom corpus
     >>> corpus = ''.join(['cheddar', 'brie', 'guyere', 'mozzarella', 'parmesian', 'jack', 'colby'])
     >>> cheese_sim = ProbabilisticDiceCoefficient(corpus)
     >>> match.add_type('cheese', StringType(similarity_measure=cheese_sim))
