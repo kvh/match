@@ -36,68 +36,95 @@ Installation
 Usage
 --------
 
-Automatic type detection and matching for common entity types
+Auto-detect common entity types
 
 .. code:: python
 
     >>> import match
 
-    # Auto detect entity type
+
     >>> match.detect_type('608-555-5555')
     (1, 'phonenumber')
+
     >>> match.detect_type('joe.van.gogh@example.com')
     (1, 'email')
+
     >>> match.detect_type('John R. Smith')
     (.95, 'fullname')
+
     >>> match.detect_type('Hi, how are you?')
     (1, 'string')
+
     >>> match.score_types('@squaredloss: match v0.2.0 is out!')
     [(0, 'email'), (.05, 'fullname'), (0, 'phonenumber'), (1, 'string'), (0, 'datetime'), ...
 
-    # Score similarities intelligently based on detected type
+
+Intelligently score similarity based on detected type
+
+.. code:: python
+
     >>> match.score_similarity('Jonathan R. Smith', 'john r smith')
-    (.82, 'fullname') # Same, but common name
+    (.82, 'fullname') # Similar, but common name
+
     >>> match.score_similarity('Jayden R. Smith', 'jayden r smith')
-    (.93, 'fullname') # Same, but uncommon name, so higher match probability
+    (.93, 'fullname') # Similar, but uncommon name, so higher match probability
+
     >>> match.score_similarity('123 easy st, NY, NY', '123 Easy Street, New York City')
     (.98, 'address')
+
     >>> match.score_similarity('223 easy st, NY, NY', '123 easy st, NY, NY')
     (.6, 'address') # Locations are close but unlikely to be the same physical place (barring a typo)
+
     >>> match.score_similarity('Hi, how are you Joe?', 'hi how are you doing joe?')
     (.81, 'string')
+
     >>> match.score_similarity('608-555-5555', '608-555-5554', as_type='phonenumber')
     .0
+
     >>> match.score_similarity('608-555-5555', '608-555-5554', as_type='string')
     .9
 
-    # Parse entity (to normalized string or object) based on detected type
+
+Parse normalized entity representations
+
+.. code:: python
+
+    # As string
     >>> match.parse('(608) 555-5555')
     ('+1 608 555 5555', 'phonenumber')
+
     >>> match.parse('6085555555')
     ('+1 608 555 5555', 'phonenumber')
+
+    # As object
     >>> match.parse(' march 3rd, 1997', to_object=True)
     (datetime.datetime(1997, 3, 3), 'datetime')
+
     >>> match.parse_as(' march 3rd, 1997', 'email')
     None
 
 
-Probabilistic matching, based on frequencies in a given corpus.
+Probabilistic similarities, based on frequencies in a given corpus.
 
 .. code:: python
 
     >>> from match import similarities
     >>> import random
 
+
     # Build similarity model from weighted random corpus of a's, b's, c's, and d's
     >>> corpus = [''.join(random.sample('a'*10000 + ' '*10000 + 'b'*1000 + 'c'*100 + 'd'*10, k=10)) for _ in range(1000)]
     >>> model = match.build_similarity_model(corpus, model_type='tfidf', tokenizer='2grams')
     >>> model.similarity('ab ba c', 'ab ba d')
     .6  # Lower similarity since 'a' is common
+
     >>> model.similarity('db bd c', 'db bd a')
     .8  # Higher similarity since 'd' is rare
+
     # Use in high-level api
     >>> match.score_similarity('db bd c', 'db bd a', similarity_measure=model)
     .8
+
 
     # Efficient similarity lookups with indexing (requires numpy and pandas, optional requirements)
     >>> model.build_index() # Requires O(n*k) space, where n is number of docs and k is average doc length
@@ -105,11 +132,12 @@ Probabilistic matching, based on frequencies in a given corpus.
     48 # O(k) similarity search
 
 
-Custom types
+Custom type detection and scoring
 
 .. code:: python
 
     >>> from match.similarity import ProbabilisticDiceCoefficient
+
 
     # Build similarity model from custom corpus
     >>> corpus = ['cheddar', 'brie', 'guyere', 'mozzarella', 'parmesian', 'jack', 'colby']
