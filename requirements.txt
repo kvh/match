@@ -1,2 +1,3 @@
 phonenumbers==8.3.3
+git+git://github.com/anhaidgroup/py-stringmatching@f547233d3cb43c04749a55a82b0b83ea18505c6d
 python-dateutil==2.6.0

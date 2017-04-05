@@ -1,10 +1,10 @@
 ===============================
-Match
+Match - Probabilistic Entity Detection and Matching in Python
 ===============================
 
 
 .. image:: https://img.shields.io/pypi/v/match.svg
-        :target: https://pypi.python.org/pypi/match
+        :target: https://pypi.python.org/pypi/pymatch
 
 .. image:: https://img.shields.io/travis/kvh/match.svg
         :target: https://travis-ci.org/kvh/match
@@ -16,9 +16,6 @@ Match
 .. image:: https://pyup.io/repos/github/kvh/match/shield.svg
      :target: https://pyup.io/repos/github/kvh/match/
      :alt: Updates
-
-
-Probabilistic Entity Matching
 
 
 * Free software: MIT license
@@ -39,7 +36,7 @@ Installation
 Usage
 --------
 
-Automatic entity detection and matching
+Automatic type detection and matching for common entity types
 
 .. code:: python
 
@@ -47,38 +44,40 @@ Automatic entity detection and matching
 
     # Auto detect entity type
     >>> match.detect_type('608-555-5555')
-    (1, PhoneNumberType)
+    (1, 'phonenumber')
     >>> match.detect_type('joe.van.gogh@example.com')
-    (1, EmailType)
+    (1, 'email')
     >>> match.detect_type('John R. Smith')
-    (.95, FullNameType)
+    (.95, 'fullname')
     >>> match.detect_type('Hi, how are you?')
-    (1, StringType)
-    >>> match.score_types('Score this! @squaredloss')
-    [(0, EmailType), (.05, FullNameType), (0, PhoneNumberType), (1, StringType), (0, DateTimeType), ...
+    (1, 'string')
+    >>> match.score_types('@squaredloss: match v0.2.0 is out!')
+    [(0, 'email'), (.05, 'fullname'), (0, 'phonenumber'), (1, 'string'), (0, 'datetime'), ...
 
     # Score similarities intelligently based on detected type
     >>> match.score_similarity('Jonathan R. Smith', 'john r smith')
-    (.92, FullNameType)
+    (.82, 'fullname') # Same, but common name
+    >>> match.score_similarity('Jayden R. Smith', 'jayden r smith')
+    (.93, 'fullname') # Same, but uncommon name, so higher match probability
     >>> match.score_similarity('123 easy st, NY, NY', '123 Easy Street, New York City')
-    (.98, AddressType)
+    (.98, 'address')
     >>> match.score_similarity('223 easy st, NY, NY', '123 easy st, NY, NY')
-    (.6, AddressType)
+    (.6, 'address') # Locations are close but unlikely to be the same physical place (barring a typo)
     >>> match.score_similarity('Hi, how are you Joe?', 'hi how are you doing joe?')
-    (.81, StringType)
-    >>> match.score_similarity_as_type('608-555-5555', '608-555-5554', 'phonenumber')
+    (.81, 'string')
+    >>> match.score_similarity('608-555-5555', '608-555-5554', as_type='phonenumber')
     .0
-    >>> match.score_similarity_as_type('608-555-5555', '608-555-5554', 'string')
+    >>> match.score_similarity('608-555-5555', '608-555-5554', as_type='string')
     .9
 
     # Parse entity (to normalized string or object) based on detected type
     >>> match.parse('(608) 555-5555')
-    ('+1 608 555 5555', PhoneNumberType)
+    ('+1 608 555 5555', 'phonenumber')
     >>> match.parse('6085555555')
-    ('+1 608 555 5555', PhoneNumberType)
+    ('+1 608 555 5555', 'phonenumber')
     >>> match.parse(' march 3rd, 1997', to_object=True)
-    (datetime.datetime(1997, 3, 3), DateTimeType)
-    >>> match.parse_as_type(' march 3rd, 1997', 'email')
+    (datetime.datetime(1997, 3, 3), 'datetime')
+    >>> match.parse_as(' march 3rd, 1997', 'email')
     None
 
 
@@ -90,12 +89,20 @@ Probabilistic matching, based on frequencies in a given corpus.
     >>> import random
 
     # Build similarity model from weighted random corpus of a's, b's, c's, and d's
-    >>> corpus = random.sample('a'*10000 + ' '*10000 + 'b'*1000 + 'c'*100 + 'd'*10, k=21110)
-    >>> psim = similarities.ProbabilisticNgramSimilarity(corpus, grams=2)
-    >>> psim.similarity('ab ba c', 'ab ba d')
+    >>> corpus = [''.join(random.sample('a'*10000 + ' '*10000 + 'b'*1000 + 'c'*100 + 'd'*10, k=10)) for _ in range(1000)]
+    >>> model = match.build_similarity_model(corpus, model_type='tfidf', tokenizer='2grams')
+    >>> model.similarity('ab ba c', 'ab ba d')
     .6  # Lower similarity since 'a' is common
-    >>> psim.similarity('db bd c', 'db bd a')
+    >>> model.similarity('db bd c', 'db bd a')
     .8  # Higher similarity since 'd' is rare
+    # Use in high-level api
+    >>> match.score_similarity('db bd c', 'db bd a', similarity_measure=model)
+    .8
+
+    # Efficient similarity lookups with indexing (requires numpy and pandas, optional requirements)
+    >>> model.build_index() # Requires O(n*k) space, where n is number of docs and k is average doc length
+    >>> len(model.get_all_similar('db bd c', measure='overlap', threshold=.6))
+    48 # O(k) similarity search
 
 
 Custom types
@@ -105,9 +112,9 @@ Custom types
     >>> from match.similarity import ProbabilisticDiceCoefficient
 
     # Build similarity model from custom corpus
-    >>> corpus = ''.join(['cheddar', 'brie', 'guyere', 'mozzarella', 'parmesian', 'jack', 'colby'])
-    >>> cheese_sim = ProbabilisticDiceCoefficient(corpus)
-    >>> match.add_type('cheese', StringType(similarity_measure=cheese_sim))
+    >>> corpus = ['cheddar', 'brie', 'guyere', 'mozzarella', 'parmesian', 'jack', 'colby']
+    >>> model = match.build_similarity_model(corpus, model_type='dice', tokenizer='3grams')
+    >>> match.add_type('cheese', similarity_model=model)
     >>> match.detect_type('colby jack')
     (.8, 'cheese')
 

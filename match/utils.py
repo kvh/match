@@ -24,7 +24,17 @@ Text utils
 def clean_to_alphanum(s):
     if not s:
         return ''
+    if not isinstance(s, str):
+        s = str(s)
     s = s.lower()
     s = non_an.sub('', s)
     s = collapse.sub(' ', s)
     return s.strip()
+
+
+def lower_and_strip(s):
+    if not s:
+        return ''
+    if not isinstance(s, str):
+        s = str(s)
+    return s.lower().strip()
