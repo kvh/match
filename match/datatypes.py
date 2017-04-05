@@ -196,7 +196,9 @@ def to_datetime(s):
         return parser.parse(s)
     if secs < 1000000000000:
         return datetime.datetime.fromtimestamp(secs)
-    return datetime.datetime.fromtimestamp(secs / 1000)
+    if secs < 1000000000000000:
+        return datetime.datetime.fromtimestamp(secs / 1000)
+    return None
 
 
 class DateTimeType(StringType):

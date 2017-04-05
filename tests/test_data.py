@@ -34,6 +34,44 @@ datatype_instances = {
             '+1 (608) 345-6789',
         ]
     },
+    'datetime': {
+        'valid': [
+            'Sep 25 2003',
+            'Sep 25th 2003',
+            'Sep 25 10:36:28 2003',
+            'Thu Sep 25 2003',
+            'Thu Sep 25th 2003',
+            'Thu Sep 25 10:36:28 2003',
+            'Thursday Sep 25 10:36:28 2003',
+            'Thursday September 25 10:36:28 2003',
+            'Thursday September 25th 10:36:28am 2003',
+            '2003-09-25T10:49:41.5-03:00',
+            '2003-09-25T10:49:41',
+            '20030925T104941-0300',
+            '20030925T104941',
+            1064486188,
+            1064486188000,
+            '1064486188',
+            '1064486188000',
+        ],
+        'invalid': [
+            # '64th of February', Well, dateutil.parser actually likes this one...
+            '1st of Neptune',
+            'Neptune 1',
+            'definitely not a date',
+            '10000000000000000000000',
+            'ahem',
+        ],
+        'equivalent': [
+            # First is normalized version
+            '2003-09-25T10:36:28',
+
+            'Thu Sep 25 10:36:28 2003',
+            'Thursday Sep 25 10:36:28 2003',
+            'Thursday September 25 10:36:28 2003',
+            'Thursday September 25th 10:36:28am 2003',
+        ]
+    },
     'email': {
         'valid': [
             'k@r.vh',
